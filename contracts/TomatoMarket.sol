@@ -16,8 +16,8 @@ contract TomatoMarket {
     mapping (uint => Tomato) tomatoes;
 
     enum TomatoStatus {
+        Fresh,
         Rotten,
-        Fresh
     }
     event TomatoAdded (string message);
 
