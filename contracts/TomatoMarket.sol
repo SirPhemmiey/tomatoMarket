@@ -17,7 +17,7 @@ contract TomatoMarket {
 
     enum TomatoStatus {
         Fresh,
-        Rotten,
+        Rotten
     }
     event TomatoAdded (string message);
 

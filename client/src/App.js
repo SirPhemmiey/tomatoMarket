@@ -1,71 +1,159 @@
-import React, { Component } from "react";
-import SimpleStorageContract from "./contracts/SimpleStorage.json";
-import getWeb3 from "./utils/getWeb3";
+import React from 'react'
+import logo from './logo.png';
+import TomatoList from './TomatoList';
+import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
+import './App.css';
+import TomatoToolbar from './TomatoToolbar';
+import TomatoMarketContract from './contracts/TomatoMarket.json';
 
-import "./App.css";
+class App extends React.Component {
+  constructor() {
+    super();
 
-class App extends Component {
-  state = { storageValue: 0, web3: null, accounts: null, contract: null };
+    const ipfsScript = document.createElement("script");
+    const fileBufferScript = document.createElement("script");
 
-  componentDidMount = async () => {
-    try {
-      // Get network provider and web3 instance.
-      const web3 = await getWeb3();
+    ipfsScript.src = "https://unpkg.com/ipfs-api/dist/index.js";
+    ipfsScript.async = true;
 
-      // Use web3 to get the user's accounts.
-      const accounts = await web3.eth.getAccounts();
+    fileBufferScript.src = "https://wzrd.in/standalone/buffer";
+    fileBufferScript.async = true;
 
-      // Get the contract instance.
-      const networkId = await web3.eth.net.getId();
-      const deployedNetwork = SimpleStorageContract.networks[networkId];
-      const instance = new web3.eth.Contract(
-        SimpleStorageContract.abi,
-        deployedNetwork && deployedNetwork.address,
-      );
+    ipfsScript.addEventListener('load', async function() {
+      let ipfsHost = "127.0.0.1";
+      let ipfsAPIPort = "5001";
+      let ipfsWebPort = "8080";
 
-      // Set web3, accounts, and contract to the state, and then proceed with an
-      // example of interacting with the contract's methods.
-      this.setState({ web3, accounts, contract: instance }, this.runExample);
-    } catch (error) {
-      // Catch any errors for any of the above operations.
-      alert(
-        `Failed to load web3, accounts, or contract. Check console for details.`,
-      );
-      console.error(error);
-    }
-  };
+      window.ipfs = window.IpfsApi(ipfsHost, ipfsAPIPort);
+      window.ipfs.swarm.peers(function(err, response) {
+        if (err) {
+          console.error("Error while connecting to IPFS: " + err);
+        }
+        else {
+          console.log("IPFS - connected to " + response.length + " peers.");
+          console.log(response);
+        }
+      })
+    });
+    document.body.appendChild(ipfsScript);
+    document.body.appendChild(fileBufferScript);
 
-  runExample = async () => {
-    const { accounts, contract } = this.state;
+    //window.signedUser = window.web3.eth.accounts[0];
+    let abi = JSON.parse([
+      {
+        "anonymous": false,
+        "inputs": [
+          {
+            "indexed": false,
+            "name": "message",
+            "type": "string"
+          }
+        ],
+        "name": "TomatoAdded",
+        "type": "event"
+      },
+      {
+        "constant": true,
+        "inputs": [],
+        "name": "getTomatoCount",
+        "outputs": [
+          {
+            "name": "",
+            "type": "uint8"
+          }
+        ],
+        "payable": false,
+        "stateMutability": "view",
+        "type": "function"
+      },
+      {
+        "constant": false,
+        "inputs": [
+          {
+            "name": "displayName",
+            "type": "string"
+          },
+          {
+            "name": "description",
+            "type": "string"
+          },
+          {
+            "name": "price",
+            "type": "uint8"
+          },
+          {
+            "name": "status",
+            "type": "uint8"
+          },
+          {
+            "name": "photoHash",
+            "type": "string"
+          }
+        ],
+        "name": "addTomato",
+        "outputs": [],
+        "payable": false,
+        "stateMutability": "nonpayable",
+        "type": "function"
+      },
+      {
+        "constant": true,
+        "inputs": [
+          {
+            "name": "tomatoId",
+            "type": "uint8"
+          }
+        ],
+        "name": "getTomato",
+        "outputs": [
+          {
+            "name": "displayName",
+            "type": "string"
+          },
+          {
+            "name": "description",
+            "type": "string"
+          },
+          {
+            "name": "price",
+            "type": "uint8"
+          },
+          {
+            "name": "photoHash",
+            "type": "string"
+          }
+        ],
+        "payable": false,
+        "stateMutability": "view",
+        "type": "function"
+      }
+    ]);
+    let contractAbi = window.web3.eth.contract(abi)
+    window.signedInUser = window.web3.eth.accounts[0]
+    window.contract = contractAbi.at('0xA497c24032043D9e96ff6b80747B51449dcf0167');
 
-    // Stores a given value, 5 by default.
-    await contract.methods.set(5).send({ from: accounts[0] });
-
-    // Get the value from the contract to prove it worked.
-    const response = await contract.methods.get().call();
-
-    // Update state with the result.
-    this.setState({ storageValue: response });
-  };
+    window.contract.TomatoAdded().watch(function(error, result) {
+      if (!error) {
+        alert("Tomato added!");
+      } else {
+        alert("Error while adding tomato: " + error);
+      }
+    });
+  }
 
   render() {
-    if (!this.state.web3) {
-      return <div>Loading Web3, accounts, and contract...</div>;
-    }
     return (
-      <div className="App">
-        <h1>Good to Go!</h1>
-        <p>Your Truffle Box is installed and ready.</p>
-        <h2>Smart Contract Example</h2>
-        <p>
-          If your contracts compiled and migrated successfully, below will show
-          a stored value of 5 (by default).
-        </p>
-        <p>
-          Try changing the value stored on <strong>line 40</strong> of App.js.
-        </p>
-        <div>The stored value is: {this.state.storageValue}</div>
-      </div>
+      <MuiThemeProvider>
+        <div className="App">
+          <header className="App-header">
+            <img src={logo} className="App-logo" alt="logo" />
+            <h1 className="App-title">Black Market for Tomatoes</h1>
+          </header>
+          <TomatoToolbar />
+          <br />
+          <TomatoList />
+        </div>
+      </MuiThemeProvider>
     );
   }
 }
