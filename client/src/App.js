@@ -1,10 +1,11 @@
 import React from 'react'
-import logo from './logo.png';
+import logo from './logo.svg';
 import TomatoList from './TomatoList';
 import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
 import './App.css';
 import TomatoToolbar from './TomatoToolbar';
 import TomatoMarketContract from './contracts/TomatoMarket.json';
+import web3 from 'web3';
 
 class App extends React.Component {
   constructor() {
@@ -16,8 +17,8 @@ class App extends React.Component {
     ipfsScript.src = "https://unpkg.com/ipfs-api/dist/index.js";
     ipfsScript.async = true;
 
-    fileBufferScript.src = "https://wzrd.in/standalone/buffer";
-    fileBufferScript.async = true;
+    // fileBufferScript.src = "https://wzrd.in/standalone/buffer";
+    // fileBufferScript.async = true;
 
     ipfsScript.addEventListener('load', async function() {
       let ipfsHost = "127.0.0.1";
@@ -39,97 +40,10 @@ class App extends React.Component {
     document.body.appendChild(fileBufferScript);
 
     //window.signedUser = window.web3.eth.accounts[0];
-    let abi = JSON.parse([
-      {
-        "anonymous": false,
-        "inputs": [
-          {
-            "indexed": false,
-            "name": "message",
-            "type": "string"
-          }
-        ],
-        "name": "TomatoAdded",
-        "type": "event"
-      },
-      {
-        "constant": true,
-        "inputs": [],
-        "name": "getTomatoCount",
-        "outputs": [
-          {
-            "name": "",
-            "type": "uint8"
-          }
-        ],
-        "payable": false,
-        "stateMutability": "view",
-        "type": "function"
-      },
-      {
-        "constant": false,
-        "inputs": [
-          {
-            "name": "displayName",
-            "type": "string"
-          },
-          {
-            "name": "description",
-            "type": "string"
-          },
-          {
-            "name": "price",
-            "type": "uint8"
-          },
-          {
-            "name": "status",
-            "type": "uint8"
-          },
-          {
-            "name": "photoHash",
-            "type": "string"
-          }
-        ],
-        "name": "addTomato",
-        "outputs": [],
-        "payable": false,
-        "stateMutability": "nonpayable",
-        "type": "function"
-      },
-      {
-        "constant": true,
-        "inputs": [
-          {
-            "name": "tomatoId",
-            "type": "uint8"
-          }
-        ],
-        "name": "getTomato",
-        "outputs": [
-          {
-            "name": "displayName",
-            "type": "string"
-          },
-          {
-            "name": "description",
-            "type": "string"
-          },
-          {
-            "name": "price",
-            "type": "uint8"
-          },
-          {
-            "name": "photoHash",
-            "type": "string"
-          }
-        ],
-        "payable": false,
-        "stateMutability": "view",
-        "type": "function"
-      }
-    ]);
+    let abi = JSON.parse('[{ "anonymous": false, "inputs": [{"indexed": false, "name": "message", "type": "string"}],"name": "TomatoAdded","type": "event"},{"constant": true,"inputs": [],"name": "getTomatoCount","outputs": [{"name": "","type": "uint8"}],"payable": false,"stateMutability": "view","type": "function"},{"constant": false,"inputs": [{"name": "displayName","type": "string"},{"name": "description","type": "string"},{"name": "price","type": "uint8"},{"name": "status","type": "uint8"},{"name": "photoHash","type": "string"}],"name": "addTomato","outputs": [],"payable": false,"stateMutability": "nonpayable","type": "function"},{"constant": true,"inputs": [{"name": "tomatoId","type": "uint8"}],"name": "getTomato","outputs": [{"name": "displayName","type": "string"},{"name": "description","type": "string"},{"name": "price","type": "uint8"},{"name": "photoHash","type": "string"}],"payable": false,"stateMutability": "view","type": "function"}]');
     let contractAbi = window.web3.eth.contract(abi)
-    window.signedInUser = window.web3.eth.accounts[0]
+    window.SignedUser = window.web3.eth.getAccounts();
+    //let dd = accounts[0]
     window.contract = contractAbi.at('0xA497c24032043D9e96ff6b80747B51449dcf0167');
 
     window.contract.TomatoAdded().watch(function(error, result) {
@@ -151,7 +65,7 @@ class App extends React.Component {
           </header>
           <TomatoToolbar />
           <br />
-          <TomatoList />
+          {/* <TomatoList /> */}
         </div>
       </MuiThemeProvider>
     );
